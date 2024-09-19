@@ -2,6 +2,7 @@ import json
 import os
 import requests
 import re
+from dotenv import dotenv_values
 
 
 class Session:
@@ -27,7 +28,7 @@ class Session:
         self.session.headers["z-dev-apikey"] = "Tg1NWEwNGIgIC0K"
         self.session.headers["Content-Type"] = "application/json"
 
-    def login_php(self, username: str = None, password: str = None):
+    def login_php(self):
         self.session.headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8"
         url_login_php = "https://web.spaggiari.eu/auth-p7/app/default/AuthApi4.php?a=aLoginPwd"
         dati_raw = f"cid=&uid={self.username}&pwd={self.password}&pin=&target="
@@ -38,14 +39,14 @@ class Session:
         #print(r.json())
         #print(len(r.cookies))
         for cookie in r.cookies:
-            print(cookie.name)
-            print(cookie.value)
-            print(cookie.domain)
+            # print(cookie.name)
+            # print(cookie.value)
+            # print(cookie.domain)
             self.phpsessid = cookie.value
             break
 
 
-    def login(self, username: str = None, password: str = None):
+    def login(self):
         """
         Login to Classe Viva API
         :param username: Classe Viva username or email
@@ -65,7 +66,9 @@ class Session:
         ).json()
 
         if 'authentication failed' in r.get('error', ''):
-            raise AuthenticationFailedError()
+            print(r['error'])
+            return False
+            #raise AuthenticationFailedError()
 
         self.logged_in  = True
         self.first_name = r['firstName']
@@ -74,6 +77,7 @@ class Session:
         self.tokenAP    = r['tokenAP']
         self.ident      = r['ident']
         self.id         = re.sub(r"\D", "", r['ident'])
+        return True
 
     def imposta_colloquio(self, data, num_ora, ora_inizio, ora_fine):
         self.session.headers["host"] = "web.spaggiari.eu"
@@ -105,6 +109,7 @@ class Session:
             headers=self.session.headers
         )
         print(r)
+        return True
 
     def circolari(self, verbose=False):
         self.session.headers['z-auth-token'] = self.token
@@ -143,12 +148,14 @@ class Session:
         else:
             print(f"circolare {circolare['cntTitle']} gia' scaricata")
 
-
-s = Session(username="mio_username", password="mia_password")
-s.login()
+config = dotenv_values()
+# print(config['USERNAME'])
+# print(config['PASSWORD'])
+s = Session(username=config['USERNAME'], password=config['PASSWORD'])
+risultato = s.login()
 s.login_php()
 s.imposta_colloquio('2024-09-27', 5, '12:00', '12:50')
-# s.circolari()
+#s.circolari(True)
 # for i, c in enumerate(s.lista_circolari):
 #     if c['cntCategory'] == 'Circolare':
 #         s.download_circolare(i)
