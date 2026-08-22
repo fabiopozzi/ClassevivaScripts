@@ -8,7 +8,7 @@ from dotenv import dotenv_values
 class Session:
     base_url = "https://web.spaggiari.eu/rest/v1"
     login_url = base_url + "/auth/login/"
-    download_path = "/home/fabio/Nextcloud/Fauser/circolari24/"
+    download_path = "/home/fabio/Nextcloud/Fauser/circolari25/"
 
     def __init__(self, username: str = None, password: str = None):
         self.logged_in  = False
@@ -135,19 +135,20 @@ class Session:
             headers=self.session.headers
         )
 
-        url_allegato = f"{self.base_url}/teachers/{self.id}/noticeboard/attach/CF/{circolare['pubId']}/1"
-        r = self.session.get(
-            url=url_allegato,
-            headers=self.session.headers
-        )
-        for el in circolare['attachments']:
+        for num_allegato, el in enumerate(circolare['attachments'], start=1):
             filepath = self.download_path + el['fileName']
-            if not os.path.exists(filepath):
-                print(f"Nuova circolare: {circolare['cntTitle']}")
-                with open(filepath, "wb") as f:
-                    f.write(r.content)
-            else:
+            if os.path.exists(filepath):
                 print(f"circolare {circolare['cntTitle']} gia' scaricata")
+                continue
+
+            url_allegato = f"{self.base_url}/teachers/{self.id}/noticeboard/attach/CF/{circolare['pubId']}/{num_allegato}"
+            r = self.session.get(
+                url=url_allegato,
+                headers=self.session.headers
+            )
+            print(f"Nuova circolare: {circolare['cntTitle']}")
+            with open(filepath, "wb") as f:
+                f.write(r.content)
 
 
 def main():
