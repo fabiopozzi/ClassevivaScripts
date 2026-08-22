@@ -140,22 +140,35 @@ class Session:
             url=url_allegato,
             headers=self.session.headers
         )
-        filepath = self.download_path + circolare['attachments'][0]['fileName']
-        if not os.path.exists(filepath):
-            print(f"Nuova circolare: {circolare['cntTitle']}")
-            with open(filepath, "wb") as f:
-                f.write(r.content)
-        else:
-            print(f"circolare {circolare['cntTitle']} gia' scaricata")
+        for el in circolare['attachments']:
+            filepath = self.download_path + el['fileName']
+            if not os.path.exists(filepath):
+                print(f"Nuova circolare: {circolare['cntTitle']}")
+                with open(filepath, "wb") as f:
+                    f.write(r.content)
+            else:
+                print(f"circolare {circolare['cntTitle']} gia' scaricata")
 
-config = dotenv_values()
-# print(config['USERNAME'])
-# print(config['PASSWORD'])
-s = Session(username=config['USERNAME'], password=config['PASSWORD'])
-risultato = s.login()
-s.login_php()
-s.imposta_colloquio('2024-09-27', 5, '12:00', '12:50')
-#s.circolari(True)
-# for i, c in enumerate(s.lista_circolari):
-#     if c['cntCategory'] == 'Circolare':
-#         s.download_circolare(i)
+
+def main():
+    config = dotenv_values()
+    s = Session(username=config['USERNAME'], password=config['PASSWORD'])
+    if not s.login():
+        return 1
+    s.login_php()
+    s.imposta_colloquio('2026-04-14', 5, '12:10', '12:50')
+    s.imposta_colloquio('2026-04-21', 5, '12:10', '12:50')
+    s.imposta_colloquio('2026-04-28', 5, '12:10', '12:50')
+    s.imposta_colloquio('2026-05-05', 5, '12:10', '12:50')
+    s.imposta_colloquio('2026-05-12', 5, '12:10', '12:50')
+    s.imposta_colloquio('2026-05-19', 5, '12:10', '12:50')
+    s.imposta_colloquio('2026-05-26', 5, '12:10', '12:50')
+    #s.circolari(True)
+    #for i, c in enumerate(s.lista_circolari):
+    #     if c['cntCategory'] == 'Circolare':
+    #         s.download_circolare(i)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
