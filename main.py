@@ -29,12 +29,12 @@ class Session:
         self.session.headers["Content-Type"] = "application/json"
 
     def login_php(self):
-        self.session.headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8"
         url_login_php = "https://web.spaggiari.eu/auth-p7/app/default/AuthApi4.php?a=aLoginPwd"
         dati_raw = f"cid=&uid={self.username}&pwd={self.password}&pin=&target="
         r = self.session.post(
             url=url_login_php,
-            data=dati_raw
+            data=dati_raw,
+            headers={"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"}
             )
         #print(r.json())
         #print(len(r.cookies))
@@ -80,14 +80,18 @@ class Session:
         return True
 
     def imposta_colloquio(self, data, num_ora, ora_inizio, ora_fine):
-        self.session.headers["host"] = "web.spaggiari.eu"
-        self.session.headers["User-Agent"] = "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0"
-        self.session.headers["accept"] = "*/*"
-        self.session.headers["accept-language"] = "en-US,en;q=0.5"
-        self.session.headers["accept-encoding"] = "gzip, deflate, br"
-        self.session.headers["Content-Type"] = "application/x-www-form-urlencoded"
-        self.session.headers["referer"] = "https://web.spaggiari.eu/cvv/app/default/gioprof_colloqui.php"
-        self.session.headers["cookie"] = f"webrole=userdoc; webidentity={self.ident}; PHPSESSID={self.phpsessid}"
+        # header del sito classico, diversi da quelli dell'app usati per le API REST:
+        # valgono solo per questa richiesta, non per tutta la sessione
+        headers = {
+            "host": "web.spaggiari.eu",
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+            "accept": "*/*",
+            "accept-language": "en-US,en;q=0.5",
+            "accept-encoding": "gzip, deflate, br",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "referer": "https://web.spaggiari.eu/cvv/app/default/gioprof_colloqui.php",
+            "cookie": f"webrole=userdoc; webidentity={self.ident}; PHPSESSID={self.phpsessid}",
+        }
 
         dati = {
                 'action': 'confpopupdoc',
@@ -106,7 +110,7 @@ class Session:
         r = self.session.post(
             url=url_colloquio,
             data=dati,
-            headers=self.session.headers
+            headers=headers
         )
         print(r)
         return True
