@@ -37,13 +37,15 @@ class Session:
             headers={"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"}
             )
         #print(r.json())
-        #print(len(r.cookies))
-        for cookie in r.cookies:
-            # print(cookie.name)
-            # print(cookie.value)
-            # print(cookie.domain)
-            self.phpsessid = cookie.value
-            break
+        # cerca il cookie di sessione per nome: l'ordine in cui il server
+        # restituisce i cookie non e' garantito
+        self.phpsessid = next(
+            (c.value for c in self.session.cookies if c.name == "PHPSESSID"), None
+        )
+        if self.phpsessid is None:
+            print("login al sito classico fallito: PHPSESSID non ricevuto")
+            return False
+        return True
 
 
     def login(self):
@@ -160,7 +162,8 @@ def main():
     s = Session(username=config['USERNAME'], password=config['PASSWORD'])
     if not s.login():
         return 1
-    s.login_php()
+    if not s.login_php():
+        return 1
     s.imposta_colloquio('2026-04-14', 5, '12:10', '12:50')
     s.imposta_colloquio('2026-04-21', 5, '12:10', '12:50')
     s.imposta_colloquio('2026-04-28', 5, '12:10', '12:50')
