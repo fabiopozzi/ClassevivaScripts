@@ -8,6 +8,7 @@ from dotenv import dotenv_values
 class Session:
     base_url = "https://web.spaggiari.eu/rest/v1"
     login_url = base_url + "/auth/login/"
+    timeout = 30
     download_path = "/home/fabio/Nextcloud/Fauser/circolari25/"
 
     def __init__(self, username: str = None, password: str = None):
@@ -34,7 +35,8 @@ class Session:
         r = self.session.post(
             url=url_login_php,
             data=dati_raw,
-            headers={"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"}
+            headers={"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"},
+            timeout=self.timeout
             )
         #print(r.json())
         # cerca il cookie di sessione per nome: l'ordine in cui il server
@@ -64,7 +66,8 @@ class Session:
             json={
                 "uid" : self.username,
                 "pass": self.password,
-            }
+            },
+            timeout=self.timeout
         ).json()
 
         if 'authentication failed' in r.get('error', ''):
@@ -112,7 +115,8 @@ class Session:
         r = self.session.post(
             url=url_colloquio,
             data=dati,
-            headers=headers
+            headers=headers,
+            timeout=self.timeout
         )
         print(r)
         return True
@@ -122,7 +126,8 @@ class Session:
         url_richiesta = self.base_url + "/teachers/" + self.id + "/noticeboard?fc=138037"
         r = self.session.get(
             url=url_richiesta,
-            headers=self.session.headers
+            headers=self.session.headers,
+            timeout=self.timeout
         ).json()
         self.lista_circolari = r['items']
 
@@ -138,7 +143,8 @@ class Session:
         url_lettura = f"{self.base_url}/teachers/{self.id}/noticeboard/read/CF/{circolare['pubId']}/101"
         r = self.session.post(
             url=url_lettura,
-            headers=self.session.headers
+            headers=self.session.headers,
+            timeout=self.timeout
         )
 
         for num_allegato, el in enumerate(circolare['attachments'], start=1):
@@ -150,7 +156,8 @@ class Session:
             url_allegato = f"{self.base_url}/teachers/{self.id}/noticeboard/attach/CF/{circolare['pubId']}/{num_allegato}"
             r = self.session.get(
                 url=url_allegato,
-                headers=self.session.headers
+                headers=self.session.headers,
+                timeout=self.timeout
             )
             print(f"Nuova circolare: {circolare['cntTitle']}")
             with open(filepath, "wb") as f:
