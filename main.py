@@ -140,6 +140,8 @@ class Session:
     def download_circolare(self, pos_circolare):
         circolare = self.lista_circolari[pos_circolare]
 
+        os.makedirs(self.download_path, exist_ok=True)
+
         url_lettura = f"{self.base_url}/teachers/{self.id}/noticeboard/read/CF/{circolare['pubId']}/101"
         r = self.session.post(
             url=url_lettura,
@@ -148,7 +150,14 @@ class Session:
         )
 
         for num_allegato, el in enumerate(circolare['attachments'], start=1):
-            filepath = self.download_path + el['fileName']
+            # il nome arriva dal server: tieni solo il nome del file, cosi' un
+            # nome tipo ../../altro.pdf non puo' scrivere fuori dalla cartella
+            nome_file = os.path.basename(el['fileName'])
+            if not nome_file:
+                print(f"allegato {num_allegato} di {circolare['cntTitle']} senza nome, saltato")
+                continue
+
+            filepath = os.path.join(self.download_path, nome_file)
             if os.path.exists(filepath):
                 print(f"circolare {circolare['cntTitle']} gia' scaricata")
                 continue
